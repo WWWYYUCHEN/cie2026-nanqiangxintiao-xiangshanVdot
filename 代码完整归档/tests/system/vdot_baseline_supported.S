@@ -1,0 +1,59 @@
+    .section .text
+    .globl _start
+_start:
+    li t0,0x200
+    csrs mstatus,t0
+    li sp,0x80008000
+    li a0,0x80000000
+    li t0,2
+    vsetvli zero,t0,e32,m1,tu,mu
+    li t1,0x01010101
+    vmv.v.x v4,t1
+    li t1,0x02020202
+    vmv.v.x v6,t1
+    vmv.v.i v8,0
+    vmv.v.i v16,0
+    vsll.vi v12,v4,24
+    vsra.vi v12,v12,24
+    vsll.vi v13,v6,24
+    vsra.vi v13,v13,24
+    vmacc.vv v8,v12,v13
+    vsll.vi v12,v4,16
+    vsra.vi v12,v12,24
+    vsll.vi v13,v6,16
+    vsra.vi v13,v13,24
+    vmacc.vv v8,v12,v13
+    vsll.vi v12,v4,8
+    vsra.vi v12,v12,24
+    vsll.vi v13,v6,8
+    vsra.vi v13,v13,24
+    vmacc.vv v8,v12,v13
+    vsll.vi v12,v4,0
+    vsra.vi v12,v12,24
+    vsll.vi v13,v6,0
+    vsra.vi v13,v13,24
+    vmacc.vv v8,v12,v13
+    vredsum.vs v24,v8,v16
+    vmv.x.s t1,v24
+    li t2,16
+    bne t1,t2,fail
+    li a1,'S'
+    jal ra,putc
+    li a1,'0'
+    jal ra,putc
+    li a1,10
+    jal ra,putc
+halt:j halt
+fail:
+    li a1,'F'
+    jal ra,putc
+    j halt
+putc:
+    li t0,0x40600008
+1:lbu t2,0(t0)
+    andi t2,t2,8
+    bnez t2,1b
+    li t0,0x40600004
+    sb a1,0(t0)
+    ret
+
